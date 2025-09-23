@@ -4,7 +4,7 @@ import gdown
 
 #строчка выше нужна потому что файл не открывается в браузере он слишком большой
 # сюда вставила последний кусок ссылки - это айди. Без хвостика в конце
-FILE_ID = "1CcFVavXoBoMwNZRdlXCKA-LY8l8kU_kR"  
+FILE_ID = "1YF8duBM5HERkyCPAUPlzrs9mirZInNkT"  
 
 # ссылку для скачивания
 url = f"https://drive.google.com/uc?id={FILE_ID}"
