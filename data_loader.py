@@ -16,7 +16,7 @@ if not os.path.exists(local_filename):
     gdown.download(url, local_filename, quiet=False)
 else:
     print("Файл уже существует. Используем локальный файл.")
-try:
+    
     # Пробуем открыть с стандартными настройками
     raw_data = pd.read_csv(local_filename)
 
