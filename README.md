@@ -9,3 +9,4 @@ pip install -r requirements.txt
 2. Запустить:
 python data_loader.py
 ## Результат
+<img width="1858" height="1272" alt="image" src="https://github.com/user-attachments/assets/70c3f804-413e-4545-96d1-e3724a700d34" />
