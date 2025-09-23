@@ -8,5 +8,6 @@ Data set -https://drive.google.com/drive/u/1/folders/1CcFVavXoBoMwNZRdlXCKA-LY8l
 pip install -r requirements.txt
 2. Запустить:
 python data_loader.py
+Заметки: пришлось скачивать локально файл, так как он огромный, поэтому в коде немного больше строк чем хотелось бы
 ## Результат
 <img width="1858" height="1272" alt="image" src="https://github.com/user-attachments/assets/70c3f804-413e-4545-96d1-e3724a700d34" />
