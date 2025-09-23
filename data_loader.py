@@ -8,7 +8,7 @@ FILE_ID = "1YF8duBM5HERkyCPAUPlzrs9mirZInNkT"
 
 # ссылку для скачивания
 url = f"https://drive.google.com/uc?id={FILE_ID}"
-local_filename = "data.csv"
+local_filename = "инжиниринг.csv"
 # Скачиваем файл, если его нет
 # -----------------------------
 if not os.path.exists(local_filename):
@@ -18,7 +18,7 @@ else:
     print("Файл уже существует. Используем локальный файл.")
     
     # Пробуем открыть с стандартными настройками
-    raw_data = pd.read_csv("data.csv")
+    raw_data = pd.read_csv(local_filename)
 
 # показываем первые 10 строк
 print(raw_data.head(10))
