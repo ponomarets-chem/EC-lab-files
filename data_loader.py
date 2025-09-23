@@ -13,9 +13,8 @@ if not os.path.exists(local_filename):
 else:
     print("Файл уже существует. Используем локальный файл.")
 
-# Чтение CSV с локального файла
+# Чтение CSV с локального файла (вне if/else!)
 raw_data = pd.read_csv(local_filename)
 
-# Показ первых 10 строк
+# Показываем первые 10 строк
 print(raw_data.head(10))
-
