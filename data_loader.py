@@ -18,7 +18,7 @@ else:
     print("Файл уже существует. Используем локальный файл.")
     
     # Пробуем открыть с стандартными настройками
-    raw_data = pd.read_csv(local_filename)
+    raw_data = pd.read_csv("data.csv")
 
 # показываем первые 10 строк
 print(raw_data.head(10))
