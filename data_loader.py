@@ -59,8 +59,13 @@ def load_and_cast():
     return df
 
 
+
 def save_parquet(df):
-    print("Сохраняем в Parquet:", OUT_PARQUET)
+    # Приводим object-колонки к строкам, чтобы PyArrow не ругался
+    for col in df.select_dtypes(include="object").columns:
+        df[col] = df[col].astype(str)
+
+    # Сохраняем в Parquet
     df.to_parquet(OUT_PARQUET, engine="pyarrow", compression="snappy", index=False)
     print("Файл сохранён:", OUT_PARQUET)
 
