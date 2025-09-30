@@ -1,38 +1,41 @@
+import os
 import pandas as pd
+import gdown
 
-# Путь к CSV
+# Настройки файла и ссылки
+FILE_ID = "1YF8duBM5HERkyCPAUPlzrs9mirZInNkT"
+url = f"https://drive.google.com/uc?id={FILE_ID}"
 local_csv = "инжиниринг.csv"
 
-# Попробуем автоматически определить разделитель
-with open(local_csv, 'r', encoding='cp1251') as f:
-    first_line = f.readline()
-    if ';' in first_line:
-        sep = ';'
-    elif ',' in first_line:
-        sep = ','
+# Функция скачивания файла, если его нет
+def download_if_needed():
+    if not os.path.exists(local_csv):
+        print("Файл не найден локально. Скачиваем...")
+        gdown.download(url, local_csv, quiet=False)
     else:
-        sep = None  # pandas сам попытается угадать
+        print("Файл уже существует. Используем локальный файл.")
 
-print(f"Используемый разделитель: {sep}")
+# Функция просмотра первых строк CSV и типов колонок
+def preview_csv():
+    print("Читаем CSV с 62-й строки как заголовок...")
+    df_preview = pd.read_csv(
+        local_csv,
+        sep=';',       # поменяй на ',' если разделитель другой
+        header=61,     # 62-я строка как заголовок
+        decimal=',',
+        encoding='cp1251',
+        nrows=10       # только первые 10 строк
+    )
 
-# Читаем только заголовок и первые 10 строк после него
-df_preview = pd.read_csv(
-    local_csv,
-    sep=sep,
-    header=61,      # 62-я строка как имена колонок
-    decimal=',',
-    encoding='cp1251',
-    nrows=10
-)
+    print("\nПервые 10 строк CSV:")
+    print(df_preview.head(10))
 
-# Показываем первые 10 строк
-print("Первые 10 строк CSV:")
-print(df_preview.head(10))
+    print("\nТипы колонок:")
+    print(df_preview.dtypes)
 
-# Показываем типы колонок, которые pandas определил сам
-print("\nТипы колонок:")
-print(df_preview.dtypes)
+def main():
+    download_if_needed()
+    preview_csv()
 
-# Опционально: выводим, сколько пропущенных значений в каждой колонке
-print("\nКоличество пропусков (NaN) в каждой колонке:")
-print(df_preview.isna().sum())
+if __name__ == "__main__":
+    main()
