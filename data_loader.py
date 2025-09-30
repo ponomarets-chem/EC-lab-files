@@ -12,7 +12,7 @@ out_parquet = "инжиниринг.parquet"
 
 # Словарь типов колонок
 TYPE_MAP = {
-    "-0,3V CA with magnet_C01.mpt": "category",
+    "id": "category",
     "mode": "Int64",
     "ox/red": "category",
     "error": "Int64",
