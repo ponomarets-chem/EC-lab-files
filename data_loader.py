@@ -50,8 +50,9 @@ def load_and_cast():
     local_filename,
     encoding="cp1251",
     sep="\s+",        # если разделитель пробел
-    header=61,         # если заголовки на 4-й строке (индекс 3)
-    low_memory=False
+    header=61,         # заголовки не на первой строке
+    low_memory=False,
+    on_bad_lines='skip'
 )
 
     print("Приводим типы согласно TYPE_MAP...")
