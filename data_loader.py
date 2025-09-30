@@ -53,7 +53,7 @@ else:
 # Чтение и приведение типов
 def load_and_cast():
     print("Читаем CSV...")
-    df = pd.read_csv(local_csv, low_memory=False)
+    df = pd.read_csv(local_filename, low_memory=False)
 
     print("Приводим типы согласно TYPE_MAP...")
     for col, dtype in TYPE_MAP.items():
@@ -74,15 +74,12 @@ def save_parquet(df):
     print("Файл сохранён:", out_parquet)
 
 def main():
-    download_if_needed()
-    df = load_and_cast()
-    print("Первые 10 строк:")
-    print(df.head(10))
-    save_parquet(df)
-
-if __name__ == "__main__":
-    main()
-
+def download_if_needed():
+    if not os.path.exists(local_filename):
+        print("Файл не найден локально. Скачиваем...")
+        gdown.download(url, local_filename, quiet=False)
+    else:
+        print("Файл уже существует. Используем локальный файл.")
 
 if __name__ == "__main__":
     main()
