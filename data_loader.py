@@ -41,7 +41,6 @@ TYPE_MAP = {
     "P/W": "float"
 }
 
-# Функция скачивания файла, если его нет локально
 def download_if_needed():
     if not os.path.exists(local_csv):
         print("Файл не найден локально. Скачиваем...")
@@ -49,24 +48,27 @@ def download_if_needed():
     else:
         print("Файл уже существует. Используем локальный файл.")
 
-# Функция чтения CSV и приведения колонок к нужным типам
 def load_and_cast():
     print("Читаем CSV, пропуская метаданные и используя правильный заголовок...")
     df = pd.read_csv(
         local_csv,
-        sep=';',        # Разделитель ;
+        sep=';',        # разделитель ;
         header=61,      # 62-я строка — заголовок
-        decimal=',',    # Десятичный разделитель — запятая
+        decimal=',',    # десятичный разделитель — запятая
         encoding='cp1251',
         low_memory=False
     )
 
-    # Убираем "Unnamed" хвостовые колонки
+    # убираем "Unnamed" хвостовые колонки
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
-    # Убираем строки, где кроме первой колонки всё пусто
+    # удаляем все строки, где нет числовых данных (кроме первой колонки)
+    before = len(df)
     df = df.dropna(how="all", subset=df.columns[1:])
+    after = len(df)
+    print(f"Удалено пустых строк: {before - after}")
 
+    # приводим типы
     print("Приводим типы колонок согласно TYPE_MAP...")
     for col, dtype in TYPE_MAP.items():
         if col in df.columns:
@@ -81,19 +83,16 @@ def load_and_cast():
 
     return df
 
-# Функция сохранения в Parquet
 def save_parquet(df):
     print("Сохраняем в Parquet:", out_parquet)
     df.to_parquet(out_parquet, engine="pyarrow", compression="snappy", index=False)
     print("Файл сохранён:", out_parquet)
 
-# Главная функция
 def main():
     download_if_needed()
     df = load_and_cast()
 
-    # Вывод первых 10 строк для проверки
-    print("\nПервые 10 строк:")
+    print("\nПервые 10 строк (уже без NaN):")
     print(df.head(10))
 
     print("\nТипы колонок в DataFrame:")
