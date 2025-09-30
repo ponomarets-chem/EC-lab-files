@@ -56,18 +56,22 @@ def load_and_cast():
         local_csv,
         sep=';',        # Используем разделитель ;
         header=61,      # 62-я строка как заголовок
-        decimal=',',    # Десятичные числа с запятой
+        decimal=',',    # Десятичные числа с запятой (будет заменено на точку)
         encoding='cp1251', 
         low_memory=False
     )
 
-    print("Приводим типы колонок согласно TYPE_MAP...")
+    # Убираем пробелы в названиях колонок
+    df.columns = df.columns.str.strip()
+
+    print("Приводим типы колонок согласно TYPE_MAP с учётом экспоненты...")
     for col, dtype in TYPE_MAP.items():
         if col in df.columns:
-            if dtype == "datetime64[ns]":
-                df[col] = pd.to_datetime(df[col], errors="coerce")
+            if "Int" in dtype or "float" in dtype:
+                # Заменяем запятую на точку, чтобы корректно прочитать E+ экспоненты
+                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.'), errors='coerce')
             else:
-                df[col] = pd.to_numeric(df[col], errors="coerce") if "Int" in dtype or "float" in dtype else df[col].astype(dtype)
+                df[col] = df[col].astype(dtype)
         else:
             print(f"⚠️ ВНИМАНИЕ: колонки {col} нет в файле!")
 
@@ -76,11 +80,11 @@ def load_and_cast():
     df_preview = pd.read_csv(
         local_csv,
         sep=';',
-        header=None,   # Без заголовка
+        header=None,
         decimal=',',
         encoding='cp1251',
-        skiprows=61,   # Пропускаем первые 61 строку
-        nrows=11       # Берём строки 62-72
+        skiprows=61,
+        nrows=11
     )
     print(df_preview)
 
