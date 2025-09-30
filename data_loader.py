@@ -52,34 +52,42 @@ def load_and_cast():
     print("Читаем CSV, пропуская метаданные и используя правильный заголовок...")
     df = pd.read_csv(
         local_csv,
-        sep=';',        # разделитель ;
+        sep=";",        # разделитель ;
         header=61,      # 62-я строка — заголовок
-        decimal=',',    # десятичный разделитель — запятая
-        encoding='cp1251',
+        encoding="cp1251",
+        dtype=str,      # читаем всё как строки
         low_memory=False
     )
 
     # убираем "Unnamed" хвостовые колонки
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
-    # находим первую строку, где реально есть данные (например в "time/s")
-    first_valid = df["time/s"].first_valid_index()
-    if first_valid is not None:
-        df = df.loc[first_valid:].reset_index(drop=True)
-        print(f"Отрезали все строки до {first_valid}, теперь данные начинаются с чисел.")
+    # заменяем запятые на точки и конвертим в правильные типы
+    for col in df.columns:
+        df[col] = (
+            df[col]
+            .str.replace(",", ".", regex=False)   # десятичная точка
+            .str.replace(r"\s+", "", regex=True)  # убираем пробелы
+        )
 
-    # приводим типы
-    print("Приводим типы колонок согласно TYPE_MAP...")
-    for col, dtype in TYPE_MAP.items():
-        if col in df.columns:
-            if dtype == "datetime64[ns]":
-                df[col] = pd.to_datetime(df[col], errors="coerce")
-            elif dtype in ("Int64", "float"):
+        # применяем TYPE_MAP
+        if col in TYPE_MAP:
+            t = TYPE_MAP[col]
+            if t in ("float", "Int64"):
                 df[col] = pd.to_numeric(df[col], errors="coerce")
-            else:
-                df[col] = df[col].astype(dtype)
+            elif t == "category":
+                df[col] = df[col].astype("category")
+
+    # находим первую валидную строку по time/s
+    if "time/s" in df.columns:
+        first_valid = df["time/s"].first_valid_index()
+        if first_valid is not None:
+            df = df.loc[first_valid:].reset_index(drop=True)
+            print(f"Отрезали все строки до {first_valid}, теперь данные начинаются с чисел.")
         else:
-            print(f"⚠️ ВНИМАНИЕ: колонки {col} нет в файле!")
+            print("⚠️ ВНИМАНИЕ: не найдено валидных числовых данных в 'time/s'!")
+    else:
+        print("⚠️ Колонки 'time/s' нет в файле!")
 
     return df
 
