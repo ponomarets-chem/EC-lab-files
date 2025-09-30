@@ -10,7 +10,7 @@ url = f"https://drive.google.com/uc?id={FILE_ID}"
 local_csv = "инжиниринг.csv"
 out_parquet = "инжиниринг.parquet"
 
-# Словарь типов колонок, чтобы привести их к нужным форматам
+# Словарь типов колонок
 TYPE_MAP = {
     "-0,3V CA with magnet_C01.mpt": "category",
     "mode": "Int64",
@@ -64,15 +64,25 @@ def load_and_cast():
     print("Приводим типы колонок согласно TYPE_MAP...")
     for col, dtype in TYPE_MAP.items():
         if col in df.columns:
-            # Если колонка datetime
             if dtype == "datetime64[ns]":
                 df[col] = pd.to_datetime(df[col], errors="coerce")
             else:
-                # Если числовая, конвертируем с coerce (ошибки станут NaN)
                 df[col] = pd.to_numeric(df[col], errors="coerce") if "Int" in dtype or "float" in dtype else df[col].astype(dtype)
         else:
-            # Сообщение, если колонки нет в файле
             print(f"⚠️ ВНИМАНИЕ: колонки {col} нет в файле!")
+
+    # Дополнительно: выводим строки 62-72 для быстрого просмотра
+    print("\nСтроки 62-72 для проверки (индексы 0–10 в DataFrame):")
+    df_preview = pd.read_csv(
+        local_csv,
+        sep=';',
+        header=None,   # Без заголовка
+        decimal=',',
+        encoding='cp1251',
+        skiprows=61,   # Пропускаем первые 61 строку
+        nrows=11       # Берём строки 62-72
+    )
+    print(df_preview)
 
     return df
 
@@ -87,11 +97,11 @@ def main():
     download_if_needed()
     df = load_and_cast()
 
-    # Здесь я проверяю и вывожу типы колонок
+    # Вывод типов колонок
     print("\nТипы колонок в DataFrame:")
     print(df.dtypes)
 
-    # Показываем первые 10 строк для наглядности
+    # Вывод первых 10 строк
     print("\nПервые 10 строк:")
     print(df.head(10))
 
