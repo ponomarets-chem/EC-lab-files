@@ -4,8 +4,9 @@ import gdown
 
 FILE_ID = "1YF8duBM5HERkyCPAUPlzrs9mirZInNkT"
 url = f"https://drive.google.com/uc?id={FILE_ID}"
-local_filename = "инжиниринг.csv"
+local_csv = "инжиниринг.csv"
 out_parquet = "инжиниринг.parquet"
+
 
 TYPE_MAP = {
     "Source.Name": "category",
@@ -38,24 +39,26 @@ TYPE_MAP = {
 }
 
 def download_if_needed():
-    if not os.path.exists(local_filename):
+    if not os.path.exists(local_csv):  # <-- было local_filename
         print("Файл не найден локально. Скачиваем...")
-        gdown.download(url, local_filename, quiet=False)
+        gdown.download(url, local_csv, quiet=False)  # <-- тоже local_csv
     else:
         print("Файл уже существует. Используем локальный файл.")
 
+
 def load_and_cast():
     print("Читаем CSV с 62-й строки как заголовок...")
+    # используем global переменную local_csv
     df = pd.read_csv(
-        local_csv,
-        sep=';',        # <- поменяй на ',' или '\t', если нужно
-        header=61,      # 62-я строка = 61 (0-indexed)
-        decimal=',',    # числа с запятой, если есть
+        local_csv,      # <- здесь точно имя переменной global
+        sep=';',        # поменяй если нужно
+        header=61,      # 62-я строка
+        decimal=',',
         encoding='cp1251',
         low_memory=False
     )
 
-    print("Приводим типы согласно TYPE_MAP...")
+    print("Приводим типы колонок согласно TYPE_MAP...")
     for col, dtype in TYPE_MAP.items():
         if col in df.columns:
             if dtype == "datetime64[ns]":
