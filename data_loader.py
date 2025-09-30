@@ -99,6 +99,14 @@ def save_parquet(df):
 # Главная функция
 def main():
     download_if_needed()
+
+    # --- ПРОВЕРКА ПЕРВЫХ 5 СТРОК ---
+    print("\nПервые 5 строк файла для проверки содержимого:")
+    with open(local_csv, "r", encoding="cp1251") as f:
+        for i in range(5):
+            print(f.readline())
+    # ---------------------------------
+
     df = load_and_cast()
 
     # Вывод типов колонок
