@@ -101,7 +101,7 @@ def main():
     download_if_needed()
     df = load_and_cast()
 
-    print("\nПервые 10 строк (уже без NaN):")
+    print("\nПервые 10 строк:")
     print(df.head(10))
 
     print("\nТипы колонок в DataFrame:")
