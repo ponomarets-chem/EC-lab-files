@@ -52,22 +52,21 @@ def load_and_cast():
     df = pd.read_csv(
         local_csv,      # <- здесь точно имя переменной global
         sep=';',        # поменяй если нужно
+        skiprows=62,     # с какой строки начинать читать данные
         header=61,      # 62-я строка
         decimal=',',
         encoding='cp1251',
         low_memory=False
     )
 
-    print("Приводим типы колонок согласно TYPE_MAP...")
-    for col, dtype in TYPE_MAP.items():
-        if col in df.columns:
-            if dtype == "datetime64[ns]":
-                df[col] = pd.to_datetime(df[col], errors="coerce")
-            else:
-                df[col] = df[col].astype(dtype)
+print("Приводим типы колонок согласно TYPE_MAP...")
+for col, dtype in TYPE_MAP.items():
+    if col in df.columns:
+        if dtype == "datetime64[ns]":
+            df[col] = pd.to_datetime(df[col], errors="coerce")
         else:
-            print(f"⚠️ ВНИМАНИЕ: колонки {col} нет в файле!")
-    return df
+            df[col] = pd.to_numeric(df[col], errors="coerce") if "Int" in dtype or "float" in dtype else df[col].astype(dtype)
+
 
 def save_parquet(df):
     print("Сохраняем в Parquet:", out_parquet)
