@@ -50,25 +50,23 @@ def download_if_needed():
 
 def load_and_cast():
     print("Читаем CSV, пропуская метаданные и используя правильный заголовок...")
+
+    # читаем все как строки и с latin1
     df = pd.read_csv(
         local_csv,
-        sep=";",        # разделитель ;
-        header=61,      # 62-я строка — заголовок
-        encoding="cp1251",
-        dtype=str,      # читаем всё как строки
+        sep=";",
+        header=61,
+        encoding="latin1",
+        dtype=str,
         low_memory=False
     )
 
-    # убираем "Unnamed" хвостовые колонки
+    # убираем хвостовые Unnamed колонки
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
-    # заменяем запятые на точки и конвертим в правильные типы
+    # заменяем запятые на точки и убираем пробелы
     for col in df.columns:
-        df[col] = (
-            df[col]
-            .str.replace(",", ".", regex=False)   # десятичная точка
-            .str.replace(r"\s+", "", regex=True)  # убираем пробелы
-        )
+        df[col] = df[col].str.replace(",", ".", regex=False).str.strip()
 
         # применяем TYPE_MAP
         if col in TYPE_MAP:
@@ -78,7 +76,7 @@ def load_and_cast():
             elif t == "category":
                 df[col] = df[col].astype("category")
 
-    # находим первую валидную строку по time/s
+    # отрезаем пустые строки сверху по первой валидной time/s
     if "time/s" in df.columns:
         first_valid = df["time/s"].first_valid_index()
         if first_valid is not None:
@@ -86,8 +84,6 @@ def load_and_cast():
             print(f"Отрезали все строки до {first_valid}, теперь данные начинаются с чисел.")
         else:
             print("⚠️ ВНИМАНИЕ: не найдено валидных числовых данных в 'time/s'!")
-    else:
-        print("⚠️ Колонки 'time/s' нет в файле!")
 
     return df
 
