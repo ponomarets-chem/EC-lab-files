@@ -9,7 +9,7 @@ out_parquet = "инжиниринг.parquet"
 
 
 TYPE_MAP = {
-    "Source.Name": "category",
+    "-0,3V CA with magnet_C01.mpt": "category",
     "mode": "Int64",
     "0": "Int64",
     "error": "Int64",
