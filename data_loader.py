@@ -7,11 +7,11 @@ FILE_ID = "1YF8duBM5HERkyCPAUPlzrs9mirZInNkT"
 url = f"https://drive.google.com/uc?id={FILE_ID}"
 local_filename = "инжиниринг.csv"
 out_parquet = "инжиниринг.parquet"
-Список типов: mode	0	error	control changes	Ns changes	counter inc.	Ns	time/s	
-control/V	Ewe/V	<I>/mA	dQ/C	(Q-Qo)/C	I Range	Q charge/discharge/mA.h	
-half cycle	Energy charge/W.h	Energy discharge/W.h	Capacitance charge/µF	
-Capacitance discharge/µF	Q discharge/mA.h	Q charge/mA.h	Capacity/mA.h	
-Efficiency/%	cycle number	P/W
+# Список типов: mode	0	error	control changes	Ns changes	counter inc.	Ns	time/s	
+# control/V	Ewe/V	<I>/mA	dQ/C	(Q-Qo)/C	I Range	Q charge/discharge/mA.h	
+# half cycle	Energy charge/W.h	Energy discharge/W.h	Capacitance charge/µF	
+# Capacitance discharge/µF	Q discharge/mA.h	Q charge/mA.h	Capacity/mA.h	
+# Efficiency/%	cycle number	P/W
 
 TYPE_MAP = {
     "Source.Name": "category",
