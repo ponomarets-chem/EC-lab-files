@@ -14,7 +14,7 @@ out_parquet = "инжиниринг.parquet"
 TYPE_MAP = {
     "-0,3V CA with magnet_C01.mpt": "category",
     "mode": "Int64",
-    "0": "Int64",
+    "ox/red": "category",
     "error": "Int64",
     "control changes": "Int64",
     "Ns changes": "Int64",
@@ -54,31 +54,30 @@ def load_and_cast():
     print("Читаем CSV, пропуская метаданные и используя правильный заголовок...")
     df = pd.read_csv(
         local_csv,
-        sep=';',            
-        skiprows=61,        # пропускаем метаданные
-        header=0,           # первая строка после skiprows — заголовок
-        decimal=',',        
-        encoding='cp1251',  
+        sep=';',        # Разделитель ;
+        header=61,      # 62-я строка — заголовок
+        decimal=',',    # Десятичный разделитель — запятая
+        encoding='cp1251',
         low_memory=False
     )
 
-    # Убираем лишние пробелы в названиях колонок
-    df.columns = df.columns.str.replace('\ufeff', '').str.strip()
+    # Убираем "Unnamed" хвостовые колонки
+    df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
-    print("Приводим типы колонок согласно TYPE_MAP с учётом экспоненты...")
+    # Убираем строки, где кроме первой колонки всё пусто
+    df = df.dropna(how="all", subset=df.columns[1:])
+
+    print("Приводим типы колонок согласно TYPE_MAP...")
     for col, dtype in TYPE_MAP.items():
         if col in df.columns:
-            if "Int" in dtype or "float" in dtype:
-                # Заменяем запятую на точку для корректного чтения чисел с E+ экспонентой
-                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.'), errors='coerce')
+            if dtype == "datetime64[ns]":
+                df[col] = pd.to_datetime(df[col], errors="coerce")
+            elif dtype in ("Int64", "float"):
+                df[col] = pd.to_numeric(df[col], errors="coerce")
             else:
                 df[col] = df[col].astype(dtype)
         else:
             print(f"⚠️ ВНИМАНИЕ: колонки {col} нет в файле!")
-
-    # Быстрый просмотр первых 10 строк
-    print("\nПервые 10 строк для проверки:")
-    print(df.head(10))
 
     return df
 
@@ -93,7 +92,10 @@ def main():
     download_if_needed()
     df = load_and_cast()
 
-    # Вывод типов колонок
+    # Вывод первых 10 строк для проверки
+    print("\nПервые 10 строк:")
+    print(df.head(10))
+
     print("\nТипы колонок в DataFrame:")
     print(df.dtypes)
 
