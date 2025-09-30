@@ -28,6 +28,8 @@ python data_loader.py
 7    -0.3VCAwithmagnet_C01.mpt  ...  0.000967
 8    -0.3VCAwithmagnet_C01.mpt  ...  0.000908
 9    -0.3VCAwithmagnet_C01.mpt  ...  0.000860
+<img width="1079" height="279" alt="image" src="https://github.com/user-attachments/assets/b2415683-8594-4a3c-8efd-9906b4f962fa" />
+
 
 [10 rows x 27 columns]
 
