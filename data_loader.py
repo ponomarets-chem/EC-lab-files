@@ -51,42 +51,34 @@ def download_if_needed():
 
 # Функция чтения CSV и приведения колонок к нужным типам
 def load_and_cast():
-    print("Читаем CSV с 62-й строки как заголовок...")
+    print("Читаем CSV, пропуская метаданные и используя правильный заголовок...")
     df = pd.read_csv(
         local_csv,
-        sep=';',        # Используем разделитель ;
-        header=61,      # 62-я строка как заголовок
-        decimal=',',    # Десятичные числа с запятой (будет заменено на точку)
-        encoding='cp1251', 
+        sep=';',            
+        skiprows=61,        # пропускаем метаданные
+        header=0,           # первая строка после skiprows — заголовок
+        decimal=',',        
+        encoding='cp1251-sig',  
         low_memory=False
     )
 
-    # Убираем пробелы в названиях колонок
+    # Убираем лишние пробелы в названиях колонок
     df.columns = df.columns.str.strip()
 
     print("Приводим типы колонок согласно TYPE_MAP с учётом экспоненты...")
     for col, dtype in TYPE_MAP.items():
         if col in df.columns:
             if "Int" in dtype or "float" in dtype:
-                # Заменяем запятую на точку, чтобы корректно прочитать E+ экспоненты
+                # Заменяем запятую на точку для корректного чтения чисел с E+ экспонентой
                 df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.'), errors='coerce')
             else:
                 df[col] = df[col].astype(dtype)
         else:
             print(f"⚠️ ВНИМАНИЕ: колонки {col} нет в файле!")
 
-    # Дополнительно: выводим строки 62-72 для быстрого просмотра
-    print("\nСтроки 62-72 для проверки (индексы 0–10 в DataFrame):")
-    df_preview = pd.read_csv(
-        local_csv,
-        sep=';',
-        header=None,
-        decimal=',',
-        encoding='cp1251',
-        skiprows=61,
-        nrows=11
-    )
-    print(df_preview)
+    # Быстрый просмотр первых 10 строк
+    print("\nПервые 10 строк для проверки:")
+    print(df.head(10))
 
     return df
 
@@ -99,23 +91,11 @@ def save_parquet(df):
 # Главная функция
 def main():
     download_if_needed()
-
-    # --- ПРОВЕРКА ПЕРВЫХ 5 СТРОК ---
-    print("\nПервые 5 строк файла для проверки содержимого:")
-    with open(local_csv, "r", encoding="cp1251") as f:
-        for i in range(5):
-            print(f.readline())
-    # ---------------------------------
-
     df = load_and_cast()
 
     # Вывод типов колонок
     print("\nТипы колонок в DataFrame:")
     print(df.dtypes)
-
-    # Вывод первых 10 строк
-    print("\nПервые 10 строк:")
-    print(df.head(10))
 
     save_parquet(df)
 
