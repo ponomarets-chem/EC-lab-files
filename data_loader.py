@@ -49,46 +49,26 @@ def download_if_needed():
         print("Файл уже существует. Используем локальный файл.")
 
 def load_and_cast():
-    print("Читаем CSV как строки, без фиксированного заголовка...")
-    # Сначала читаем весь файл, чтобы найти заголовок
-    df_raw = pd.read_csv(
-        local_csv,
-        sep=';',
-        header=None,
-        encoding='latin1',
-        dtype=str,
-        engine='python',
-        low_memory=False
-    )
+    print("Читаем CSV, пропуская метаданные и используя правильный заголовок...")
 
-    # Ищем строку, где начинается реальный заголовок
-    header_row = None
-    for i, row in df_raw.iterrows():
-        if 'time/s' in row.values:
-            header_row = i
-            break
-    if header_row is None:
-        raise ValueError("Не удалось найти строку заголовка с 'time/s'")
-
-    print(f"Заголовок найден на строке {header_row}, читаем данные с него...")
-
-    # Читаем CSV снова, уже с правильным header
+    # Читаем весь файл как строки
     df = pd.read_csv(
         local_csv,
-        sep=';',
-        header=header_row,
-        encoding='latin1',
+        sep=";",
+        header=61,      # 62-я строка — заголовок
+        encoding="latin1",
         dtype=str,
-        engine='python',
-        low_memory=False
+        engine="python"
     )
 
-    # Убираем лишние колонки Unnamed
+    # Убираем хвостовые Unnamed колонки
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
-    # Преобразуем значения: запятые → точки, убираем пробелы, конвертируем в числа
+    # Заменяем запятые на точки и убираем пробелы
     for col in df.columns:
         df[col] = df[col].str.replace(",", ".", regex=False).str.strip()
+
+        # Приводим к типам из TYPE_MAP
         if col in TYPE_MAP:
             t = TYPE_MAP[col]
             if t in ("float", "Int64"):
@@ -96,12 +76,14 @@ def load_and_cast():
             elif t == "category":
                 df[col] = df[col].astype("category")
 
-    # Обрезаем пустые строки сверху (по первой валидной time/s)
+    # Отрезаем пустые строки сверху по первой валидной time/s
     if "time/s" in df.columns:
         first_valid = df["time/s"].first_valid_index()
         if first_valid is not None:
             df = df.loc[first_valid:].reset_index(drop=True)
             print(f"Отрезали все строки до {first_valid}, теперь данные начинаются с чисел.")
+        else:
+            print("⚠️ Не найдено валидных числовых данных в 'time/s'!")
 
     return df
 
