@@ -46,7 +46,13 @@ def download_if_needed():
 
 def load_and_cast():
     print("Читаем CSV...")
-    df = pd.read_csv(local_filename, encoding="cp1251", low_memory=False)
+    df = pd.read_csv(
+    local_filename,
+    encoding="cp1251",
+    sep="\s+",        # если разделитель пробел
+    header=61,         # если заголовки на 4-й строке (индекс 3)
+    low_memory=False
+)
 
     print("Приводим типы согласно TYPE_MAP...")
     for col, dtype in TYPE_MAP.items():
