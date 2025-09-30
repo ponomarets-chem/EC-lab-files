@@ -17,37 +17,39 @@ TYPE_MAP = {
     "Source.Name": "category",
     "mode": "Int64",
     "0": "Int64",
-    "error": "Int64"
+    "error": "Int64",
     "control changes": "Int64",
     "Ns changes": "Int64",
     "counter inc.": "Int64",
     "Ns": "Int64",
     "time/s": "float",
     "control/V": "float",
-    "Ewe/V": "float"
+    "Ewe/V": "float",
     "<I>/mA": "float",
     "dQ/C": "float",
     "(Q-Qo)/C": "float",
     "I Range": "Int64",
-    "Q charge/discharge/mA.h": "float"
+    "Q charge/discharge/mA.h": "float",
     "half cycle": "Int64",
     "Energy charge/W.h": "float",
-    "Energy discharge/W.h": "float"
+    "Energy discharge/W.h": "float",
     "Capacitance charge/µF": "float",
     "Capacitance discharge/µF": "float",
-    "Q discharge/mA.h": "float"
+    "Q discharge/mA.h": "float",
     "Q charge/mA.h": "float",
     "Capacity/mA.h": "float",
     "Efficiency/%": "float",
     "cycle number": "float",
     "P/W": "float"
 }
-# Скачиваем файл, если его нет
+
+# Проверка и скачивания файлв
 if not os.path.exists(local_filename):
     print("Файл не найден локально. Скачиваем...")
     gdown.download(url, local_filename, quiet=False)
 else:
     print("Файл уже существует. Используем локальный файл.")
+
 # Чтение и приведение типов
 def load_and_cast():
     print("Читаем CSV...")
@@ -63,13 +65,14 @@ def load_and_cast():
         else:
             print(f"⚠️ ВНИМАНИЕ: колонки {col} нет в файле!")
     return df
+
 # Сохранение в parquet
 
-def save_parquet(df):
+  def save_parquet(df):
     print("Сохраняем в Parquet:", out_parquet)
     df.to_parquet(out_parquet, engine="pyarrow", compression="snappy", index=False)
     print("Файл сохранён:", out_parquet)
-
+      
 def main():
     download_if_needed()
     df = load_and_cast()
@@ -77,6 +80,9 @@ def main():
     print(df.head(10))
     save_parquet(df)
 
+
+
 if __name__ == "__main__":
     main()
+
 
