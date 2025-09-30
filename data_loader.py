@@ -68,11 +68,11 @@ def load_and_cast():
 
 # Сохранение в parquet
 
-  def save_parquet(df):
+def save_parquet(df):
     print("Сохраняем в Parquet:", out_parquet)
     df.to_parquet(out_parquet, engine="pyarrow", compression="snappy", index=False)
     print("Файл сохранён:", out_parquet)
-      
+
 def main():
     download_if_needed()
     df = load_and_cast()
@@ -80,6 +80,8 @@ def main():
     print(df.head(10))
     save_parquet(df)
 
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":
