@@ -3,7 +3,7 @@ import pandas as pd
 import gdown
 
 # ID файла на Google Drive
-FILE_ID = "1oC-liv_Ni5OMboPo2p257Gohk3vMO4IH"
+FILE_ID = "1YF8duBM5HERkyCPAUPlzrs9mirZInNkT"
 URL = f"https://drive.google.com/uc?id={FILE_ID}"
 
 # Локальные имена файлов
