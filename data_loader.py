@@ -58,12 +58,12 @@ def load_and_cast():
         skiprows=61,        # пропускаем метаданные
         header=0,           # первая строка после skiprows — заголовок
         decimal=',',        
-        encoding='cp1251-sig',  
+        encoding='cp1251',  
         low_memory=False
     )
 
     # Убираем лишние пробелы в названиях колонок
-    df.columns = df.columns.str.strip()
+    df.columns = df.columns.str.replace('\ufeff', '').str.strip()
 
     print("Приводим типы колонок согласно TYPE_MAP с учётом экспоненты...")
     for col, dtype in TYPE_MAP.items():
