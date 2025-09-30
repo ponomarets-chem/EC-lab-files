@@ -45,15 +45,15 @@ def download_if_needed():
         print("Файл уже существует. Используем локальный файл.")
 
 def load_and_cast():
-    print("Читаем CSV...")
+    print("Читаем CSV с 62-й строки как заголовок...")
     df = pd.read_csv(
-    local_filename,
-    encoding="cp1251",
-    sep="\s+",        # если разделитель пробел
-    header=61,         # заголовки не на первой строке
-    low_memory=False,
-    on_bad_lines='skip'
-)
+        local_csv,
+        sep=';',        # <- поменяй на ',' или '\t', если нужно
+        header=61,      # 62-я строка = 61 (0-indexed)
+        decimal=',',    # числа с запятой, если есть
+        encoding='cp1251',
+        low_memory=False
+    )
 
     print("Приводим типы согласно TYPE_MAP...")
     for col, dtype in TYPE_MAP.items():
