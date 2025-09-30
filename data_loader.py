@@ -62,11 +62,11 @@ def load_and_cast():
     # убираем "Unnamed" хвостовые колонки
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
-    # удаляем все строки, где нет числовых данных (кроме первой колонки)
-    before = len(df)
-    df = df.dropna(how="all", subset=df.columns[1:])
-    after = len(df)
-    print(f"Удалено пустых строк: {before - after}")
+    # находим первую строку, где реально есть данные (например в "time/s")
+    first_valid = df["time/s"].first_valid_index()
+    if first_valid is not None:
+        df = df.loc[first_valid:].reset_index(drop=True)
+        print(f"Отрезали все строки до {first_valid}, теперь данные начинаются с чисел.")
 
     # приводим типы
     print("Приводим типы колонок согласно TYPE_MAP...")
@@ -82,6 +82,7 @@ def load_and_cast():
             print(f"⚠️ ВНИМАНИЕ: колонки {col} нет в файле!")
 
     return df
+
 
 def save_parquet(df):
     print("Сохраняем в Parquet:", out_parquet)
