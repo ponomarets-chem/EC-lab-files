@@ -50,12 +50,10 @@ def download_if_needed():
 
 def load_and_cast():
     print("Читаем CSV, пропуская метаданные и используя правильный заголовок...")
-
-    # читаем все как строки и с latin1
     df = pd.read_csv(
         local_csv,
         sep=";",
-        header=61,
+        header=61,       # 62-я строка — заголовок
         encoding="latin1",
         dtype=str,
         low_memory=False
@@ -67,11 +65,10 @@ def load_and_cast():
     # заменяем запятые на точки и убираем пробелы
     for col in df.columns:
         df[col] = df[col].str.replace(",", ".", regex=False).str.strip()
-
-        # применяем TYPE_MAP
         if col in TYPE_MAP:
             t = TYPE_MAP[col]
             if t in ("float", "Int64"):
+                # конвертируем в числа, экспоненты будут корректно обработаны
                 df[col] = pd.to_numeric(df[col], errors="coerce")
             elif t == "category":
                 df[col] = df[col].astype("category")
@@ -85,8 +82,10 @@ def load_and_cast():
         else:
             print("⚠️ ВНИМАНИЕ: не найдено валидных числовых данных в 'time/s'!")
 
-    return df
+    print("\nКолонки после обработки:")
+    print(df.columns.tolist())
 
+    return df
 
 def save_parquet(df):
     print("Сохраняем в Parquet:", out_parquet)
