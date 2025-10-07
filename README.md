@@ -10,7 +10,8 @@ pip install -r requirements.txt
 python data_loader.py
 Заметки: пришлось скачивать локально файл, так как он огромный, поэтому в коде немного больше строк чем хотелось бы
 ## Результат
-<img width="1858" height="1272" alt="image" src="https://github.com/user-attachments/assets/70c3f804-413e-4545-96d1-e3724a700d34" />
+<img width="620" height="69" alt="image" src="https://github.com/user-attachments/assets/9dc4b465-6650-42d7-88a4-98fbdde628b9" />
+
 
 # Типизация и перевод в паркет
 
@@ -28,7 +29,7 @@ python data_loader.py
 7    -0.3VCAwithmagnet_C01.mpt  ...  0.000967
 8    -0.3VCAwithmagnet_C01.mpt  ...  0.000908
 9    -0.3VCAwithmagnet_C01.mpt  ...  0.000860
-<img width="1079" height="279" alt="image" src="https://github.com/user-attachments/assets/b2415683-8594-4a3c-8efd-9906b4f962fa" />
+<img width="756" height="512" alt="image" src="https://github.com/user-attachments/assets/d1a405a2-c95a-45b7-9d0d-f3883ff04818" />
 
 
 [10 rows x 27 columns]
@@ -62,5 +63,3 @@ Efficiency/%                     float64
 cycle number                     float64
 P/W                              float64
 dtype: object
- # Сохраняем в Parquet: инжиниринг.parquet
-# Файл сохранён: инжиниринг.parquet
