@@ -18,7 +18,7 @@ EXPECTED_HASH = "d380426c075b294b3a5808b987a352c53e8b3ff3ae99e6bec50423a710166c1
 
 # Словарь типов колонок
 TYPE_MAP = {
-    "-0,3V CA with magnet_C01.mpt": "category",
+    "id": "category",
     "mode": "Int64",
     "0": "Int64",
     "error": "Int64",
