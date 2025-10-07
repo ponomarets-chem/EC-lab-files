@@ -101,10 +101,13 @@ def load_and_cast():
         local_csv,
         sep=";",
         header=61,
-        decimal=",",
         encoding="cp1251",
         low_memory=False
     )
+
+    print("🧮 Исправляем числовые форматы (запятые → точки, e-формат)...")
+    # Универсальная замена: превращает '1,23e-4' → '1.23e-4'
+    df = df.applymap(lambda x: str(x).replace(",", ".") if isinstance(x, str) else x)
 
     print("Приводим типы колонок согласно TYPE_MAP…")
     missing = []
@@ -121,11 +124,9 @@ def load_and_cast():
         print(f"⚠️ ВНИМАНИЕ: отсутствуют следующие колонки: {missing}")
 
     print("\nПервые 10 строк таблицы:")
-    print(df.head(10))  
+    print(df.head(10))
 
     return df
-
-
 
 def save_parquet(df):
     """Сохраняет DataFrame в Parquet."""
