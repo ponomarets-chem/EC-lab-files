@@ -6,16 +6,15 @@ def fetch_spells():
     url = "https://api.open5e.com/spells/"
     response = requests.get(url)
     response.raise_for_status()
-
     data = response.json()
     spells = data["results"]
 
-    # Создаём DataFrame с основными полями
+    # создаём DataFrame с нужными полями
     df = pd.DataFrame(spells, columns=["name", "level", "school", "casting_time", "duration"])
     return df
 
 if __name__ == "__main__":
     df = fetch_spells()
-    print("Первые 5 заклинаний из D&D 5e API:\n")
-    print(df.head())
-    print(f"\nВсего загружено записей: {len(df)}")
+    print("✨ Заклинания из D&D 5e API ✨\n")
+    print(df.head(10))
+    print(f"\nВсего загружено: {len(df)} записей.")
