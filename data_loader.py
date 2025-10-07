@@ -97,7 +97,7 @@ def download_if_needed():
 import re
 
 def load_and_cast():
-    """Загружает CSV и приводит типы колонок."""
+    """Загружает CSV и приводит типы колонок, очищает числовые данные и показывает первые строки."""
     print("Читаем CSV с 62-й строки как заголовок...")
     df = pd.read_csv(
         local_csv,
@@ -107,42 +107,51 @@ def load_and_cast():
         low_memory=False
     )
 
-    print("🧮 Очищаем и нормализуем числовые данные (запятые, e-формат)...")
+    # Заменяем некорректные символы в названиях колонок
+    df.columns = [col.replace("�", "µ").strip() for col in df.columns]
 
-    def normalize_cell(x):
-        if not isinstance(x, str):
-            return x
-        s = x.strip().replace(",", ".").replace("−", "-").replace(" ", "")
-        # если выглядит как число с e, возвращаем float
-        if re.fullmatch(r"[-+]?\d*\.?\d*(e[-+]?\d+)?", s, flags=re.IGNORECASE):
-            try:
-                return float(s)
-            except ValueError:
-                return pd.NA
-        return x  # ← теперь оставляем строки нетронутыми!
+    # Убираем полностью пустые или 'Unnamed' колонки
+    df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
-    # очищаем только предполагаемо числовые колонки
+    print("🧮 Нормализуем числовые данные (запятые → точки, e-формат)...")
+
+    # Определяем числовые колонки из TYPE_MAP
     numeric_cols = [col for col, dtype in TYPE_MAP.items() if "Int" in dtype or "float" in dtype]
+    numeric_cols = [col for col in numeric_cols if col in df.columns]  # оставляем только существующие
+
+    # Функция очистки числовых ячеек
+    def normalize_cell(x):
+        if isinstance(x, str):
+            s = x.strip().replace(",", ".").replace("−", "-").replace(" ", "")
+            if re.fullmatch(r"[-+]?\d*\.?\d*(e[-+]?\d+)?", s, flags=re.IGNORECASE):
+                try:
+                    return float(s)
+                except ValueError:
+                    return pd.NA
+            return x  # оставляем строки нетронутыми
+        return x
+
     for col in numeric_cols:
-        if col in df.columns:
-            df[col] = df[col].map(normalize_cell)
+        df[col] = df[col].map(normalize_cell)
+        df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    print("Приводим типы колонок согласно TYPE_MAP…")
-    missing = []
+    # Приведение остальных типов по TYPE_MAP
     for col, dtype in TYPE_MAP.items():
-        if col in df.columns:
-            if "Int" in dtype or "float" in dtype:
-                df[col] = pd.to_numeric(df[col], errors="coerce")
-            else:
-                df[col] = df[col].astype(dtype)
-        else:
-            missing.append(col)
+        if col in df.columns and dtype == "category":
+            df[col] = df[col].astype(dtype)
 
-    if missing:
-        print(f"⚠️ ВНИМАНИЕ: отсутствуют следующие колонки: {missing}")
+    # Печать первых строк для проверки
+    print("\nПервые 10 ID:")
+    if "id" in df.columns:
+        print(df["id"].head(10))
+    else:
+        print("⚠️ Колонка 'id' не найдена!")
 
-    print("\nПервые 10 строк таблицы:")
-    print(df.head(10))
+    print("\nПервые 10 строк числовых данных:")
+    if numeric_cols:
+        print(df[numeric_cols].head(10))
+    else:
+        print("⚠️ Числовые колонки не найдены!")
 
     return df
 
