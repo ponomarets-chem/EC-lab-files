@@ -107,20 +107,25 @@ def load_and_cast():
         low_memory=False
     )
 
-    print("🧮 Очищаем и нормализуем числовые данные (запятые, пробелы, e-формат)...")
+    print("🧮 Очищаем и нормализуем числовые данные (запятые, e-формат)...")
+
     def normalize_cell(x):
         if not isinstance(x, str):
             return x
         s = x.strip().replace(",", ".").replace("−", "-").replace(" ", "")
-        # Убираем всё, кроме допустимых символов для чисел с e
+        # если выглядит как число с e, возвращаем float
         if re.fullmatch(r"[-+]?\d*\.?\d*(e[-+]?\d+)?", s, flags=re.IGNORECASE):
             try:
                 return float(s)
             except ValueError:
                 return pd.NA
-        return pd.NA
+        return x  # ← теперь оставляем строки нетронутыми!
 
-    df = df.applymap(normalize_cell)
+    # очищаем только предполагаемо числовые колонки
+    numeric_cols = [col for col, dtype in TYPE_MAP.items() if "Int" in dtype or "float" in dtype]
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = df[col].map(normalize_cell)
 
     print("Приводим типы колонок согласно TYPE_MAP…")
     missing = []
