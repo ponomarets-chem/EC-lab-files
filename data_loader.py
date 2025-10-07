@@ -1,81 +1,147 @@
 import os
+import hashlib
 import pandas as pd
 import gdown
 
-# ID файла на Google Drive
-FILE_ID = "1YF8duBM5HERkyCPAUPlzrs9mirZInNkT"
-URL = f"https://drive.google.com/uc?id={FILE_ID}"
+# === Настройки ===
 
-# Локальные имена файлов
-LOCAL_CSV = "инжиниринг.csv"
-OUT_PARQUET = "инжиниринг.parquet"
+# Ссылка на файл в Google Drive
+FILE_ID = "1YF8duBM5HERkyCPAUPlzrs9mirZInNkT"
+url = f"https://drive.google.com/uc?id={FILE_ID}"
+
+# Имена файлов
+local_csv = "инжиниринг.csv"
+out_parquet = "инжиниринг.parquet"
+
+# Эталонный SHA256-хэш
+EXPECTED_HASH = "d380426c075b294b3a5808b987a352c53e8b3ff3ae99e6bec50423a710166c1f"
+
+# Словарь типов колонок
+TYPE_MAP = {
+    "-0,3V CA with magnet_C01.mpt": "category",
+    "mode": "Int64",
+    "0": "Int64",
+    "error": "Int64",
+    "control changes": "Int64",
+    "Ns changes": "Int64",
+    "counter inc.": "Int64",
+    "Ns": "Int64",
+    "time/s": "float",
+    "control/V": "float",
+    "Ewe/V": "float",
+    "<I>/mA": "float",
+    "dQ/C": "float",
+    "(Q-Qo)/C": "float",
+    "I Range": "Int64",
+    "Q charge/discharge/mA.h": "float",
+    "half cycle": "Int64",
+    "Energy charge/W.h": "float",
+    "Energy discharge/W.h": "float",
+    "Capacitance charge/µF": "float",
+    "Capacitance discharge/µF": "float",
+    "Q discharge/mA.h": "float",
+    "Q charge/mA.h": "float",
+    "Capacity/mA.h": "float",
+    "Efficiency/%": "float",
+    "cycle number": "float",
+    "P/W": "float"
+}
+
+# === Вспомогательные функции ===
+
+def compute_file_hash(path: str, algorithm: str = "sha256") -> str:
+    """Вычисляет хэш файла (по умолчанию SHA-256)."""
+    hash_func = hashlib.new(algorithm)
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            hash_func.update(chunk)
+    return hash_func.hexdigest()
 
 
 def download_if_needed():
-    if not os.path.exists(LOCAL_CSV):
-        print("Файл не найден локально. Скачиваем...")
-        gdown.download(URL, LOCAL_CSV, quiet=False)
+    """Скачивает файл, если его нет или хэш не совпадает."""
+    need_download = False
+
+    if os.path.exists(local_csv):
+        print("Файл уже существует. Проверяем хэш…")
+        local_hash = compute_file_hash(local_csv)
+        print(f"Текущий SHA256: {local_hash}")
+
+        if EXPECTED_HASH != "REPLACE_WITH_REAL_HASH" and local_hash.lower() != EXPECTED_HASH.lower():
+            print("⚠️ Хэш не совпадает с ожидаемым! Перекачиваем файл.")
+            need_download = True
+        else:
+            print("✅ Хэш совпадает — используем локальный файл.")
     else:
-        print("Файл уже существует. Используем локальный файл.")
+        print("Файл не найден — начинаем скачивание.")
+        need_download = True
+
+    if need_download:
+        if os.path.exists(local_csv):
+            try:
+                os.remove(local_csv)
+            except Exception as e:
+                print("Не удалось удалить старый файл:", e)
+
+        gdown.download(url, local_csv, quiet=False)
+
+        if not os.path.exists(local_csv):
+            raise RuntimeError("❌ Не удалось скачать файл.")
+
+        new_hash = compute_file_hash(local_csv)
+        print(f"Хэш скачанного файла: {new_hash}")
+
+        if EXPECTED_HASH != "REPLACE_WITH_REAL_HASH" and new_hash.lower() != EXPECTED_HASH.lower():
+            raise RuntimeError("❌ Скачанный файл не совпадает по хэшу! Возможно, источник изменился.")
 
 
 def load_and_cast():
-    """Читаем CSV и приводим данные к числовому виду"""
-    print("Определяем строку с заголовками...")
-
-    header_line = None
-    with open(LOCAL_CSV, "r", encoding="latin1") as f:
-        for i, line in enumerate(f):
-            if "time/s" in line and ";" in line:
-                header_line = i
-                break
-
-    if header_line is None:
-        raise ValueError("❌ Не удалось найти строку с заголовками (нет 'time/s').")
-
-    print(f"Нашли заголовки на строке {header_line}")
-
+    """Загружает CSV и приводит типы колонок."""
+    print("Читаем CSV с 62-й строки как заголовок...")
     df = pd.read_csv(
-        LOCAL_CSV,
+        local_csv,
         sep=";",
-        header=header_line,
-        encoding="latin1",
-        dtype=str,
-        engine="python",
-        quoting=3,
-        on_bad_lines="skip"
+        header=61,
+        decimal=",",
+        encoding="cp1251",
+        low_memory=False
     )
 
-    print(f"Загружено {df.shape[0]} строк и {df.shape[1]} столбцов")
+    print("Приводим типы колонок согласно TYPE_MAP…")
+    missing = []
+    for col, dtype in TYPE_MAP.items():
+        if col in df.columns:
+            if "Int" in dtype or "float" in dtype:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+            else:
+                df[col] = df[col].astype(dtype)
+        else:
+            missing.append(col)
 
-    # чистим числа
-    for col in df.columns:
-        df[col] = df[col].str.replace(",", ".", regex=False).str.strip()
-        df[col] = pd.to_numeric(df[col], errors="ignore")
-
-    # убираем NaN → 0
-    df = df.fillna(0)
+    if missing:
+        print(f"⚠️ ВНИМАНИЕ: отсутствуют следующие колонки: {missing}")
 
     return df
 
 
-
 def save_parquet(df):
-    # Приводим object-колонки к строкам, чтобы PyArrow не ругался
-    for col in df.select_dtypes(include="object").columns:
-        df[col] = df[col].astype(str)
+    """Сохраняет DataFrame в Parquet."""
+    print("Сохраняем в Parquet:", out_parquet)
+    df.to_parquet(out_parquet, engine="pyarrow", compression="snappy", index=False)
+    print("✅ Файл сохранён:", out_parquet)
 
-    # Сохраняем в Parquet
-    df.to_parquet(OUT_PARQUET, engine="pyarrow", compression="snappy", index=False)
-    print("Файл сохранён:", OUT_PARQUET)
 
+# === Основная функция ===
 
 def main():
     download_if_needed()
     df = load_and_cast()
 
-    print("\nПример данных:")
+    print("\nПервые 10 строк:")
     print(df.head(10))
+
+    print("\nСтроки 62–72:")
+    print(df.iloc[61:72])
 
     print("\nТипы колонок:")
     print(df.dtypes)
