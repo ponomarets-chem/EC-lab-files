@@ -94,7 +94,6 @@ def download_if_needed():
         if EXPECTED_HASH != "REPLACE_WITH_REAL_HASH" and new_hash.lower() != EXPECTED_HASH.lower():
             raise RuntimeError("❌ Скачанный файл не совпадает по хэшу! Возможно, источник изменился.")
 
-
 def load_and_cast():
     """Загружает CSV и приводит типы колонок."""
     print("Читаем CSV с 62-й строки как заголовок...")
@@ -121,7 +120,11 @@ def load_and_cast():
     if missing:
         print(f"⚠️ ВНИМАНИЕ: отсутствуют следующие колонки: {missing}")
 
+    print("\nПервые 10 строк таблицы:")
+    print(df.head(10))  
+
     return df
+
 
 
 def save_parquet(df):
