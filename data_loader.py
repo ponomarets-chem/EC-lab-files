@@ -67,7 +67,7 @@ def download_if_needed():
         local_hash = compute_file_hash(local_csv)
         print(f"Текущий SHA256: {local_hash}")
 
-        if EXPECTED_HASH != "REPLACE_WITH_REAL_HASH" and local_hash.lower() != EXPECTED_HASH.lower():
+        if EXPECTED_HASH != "d380426c075b294b3a5808b987a352c53e8b3ff3ae99e6bec50423a710166c1f" and local_hash.lower() != EXPECTED_HASH.lower():
             print("⚠️ Хэш не совпадает с ожидаемым! Перекачиваем файл.")
             need_download = True
         else:
