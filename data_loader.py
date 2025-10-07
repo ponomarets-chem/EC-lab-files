@@ -94,6 +94,8 @@ def download_if_needed():
         if EXPECTED_HASH != "REPLACE_WITH_REAL_HASH" and new_hash.lower() != EXPECTED_HASH.lower():
             raise RuntimeError("❌ Скачанный файл не совпадает по хэшу! Возможно, источник изменился.")
 
+import re
+
 def load_and_cast():
     """Загружает CSV и приводит типы колонок."""
     print("Читаем CSV с 62-й строки как заголовок...")
@@ -105,9 +107,20 @@ def load_and_cast():
         low_memory=False
     )
 
-    print("🧮 Исправляем числовые форматы (запятые → точки, e-формат)...")
-    # Универсальная замена: превращает '1,23e-4' → '1.23e-4'
-    df = df.applymap(lambda x: str(x).replace(",", ".") if isinstance(x, str) else x)
+    print("🧮 Очищаем и нормализуем числовые данные (запятые, пробелы, e-формат)...")
+    def normalize_cell(x):
+        if not isinstance(x, str):
+            return x
+        s = x.strip().replace(",", ".").replace("−", "-").replace(" ", "")
+        # Убираем всё, кроме допустимых символов для чисел с e
+        if re.fullmatch(r"[-+]?\d*\.?\d*(e[-+]?\d+)?", s, flags=re.IGNORECASE):
+            try:
+                return float(s)
+            except ValueError:
+                return pd.NA
+        return pd.NA
+
+    df = df.applymap(normalize_cell)
 
     print("Приводим типы колонок согласно TYPE_MAP…")
     missing = []
@@ -127,6 +140,7 @@ def load_and_cast():
     print(df.head(10))
 
     return df
+
 
 def save_parquet(df):
     """Сохраняет DataFrame в Parquet."""
