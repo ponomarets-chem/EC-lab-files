@@ -2,12 +2,11 @@ import psycopg2
 import pandas as pd
 import os
 from dotenv import load_dotenv
-import re
 
 print("Начало работы скрипта")
 
 # Загружаем настройки подключения
-env_path = r'C:\Users\ponom\Desktop\инжиниринг упраления данными\.env'
+env_path = '.env'
 print(f"Ищем файл с настройками: {env_path}")
 
 try:
@@ -15,6 +14,35 @@ try:
     print("Настройки подключения загружены")
 except Exception as e:
     print(f"Ошибка загрузки настроек: {e}")
+
+def load_from_parquet():
+    """Загружает подготовленные данные из Parquet файла"""
+    parquet_file = "инжиниринг.parquet"
+    
+    if not os.path.exists(parquet_file):
+        raise FileNotFoundError(f"Parquet файл {parquet_file} не найден")
+    
+    print("Загружаем подготовленные данные из Parquet...")
+    df = pd.read_parquet(parquet_file)
+    print(f"Данные загружены: {len(df)} строк, {len(df.columns)} колонок")
+    print(f"Колонки: {list(df.columns)}")
+    return df
+
+def normalize_column_name(col_name):
+    """Нормализует название колонки для PostgreSQL"""
+    # Заменяем проблемные символы на подчеркивания
+    normalized = (col_name.replace("/", "_per_")
+                  .replace("(", "")
+                  .replace(")", "")
+                  .replace("<", "")
+                  .replace(">", "")
+                  .replace(" ", "_")
+                  .replace("-", "_")
+                  .replace(".", "_")
+                  .replace("µ", "u")
+                  .replace("%", "percent")
+                  .lower())
+    return normalized
 
 def main():
     try:
@@ -50,13 +78,8 @@ def main():
         cursor = conn.cursor()
         print("Подключение установлено")
         
-        # Загружаем данные из CSV файла
-        print("Читаем данные из файла...")
-        df = pd.read_csv("инжиниринг.csv", sep=";", header=61, encoding="cp1251", low_memory=False)
-        
-        # Обрабатываем названия колонок
-        df.columns = [col.replace("�", "µ").strip() for col in df.columns]
-        df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
+        # Загружаем данные из ПОДГОТОВЛЕННОГО Parquet файла
+        df = load_from_parquet()
         
         # Берем первые 100 строк
         df_100 = df.head(100)
@@ -70,40 +93,65 @@ def main():
         cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
         print("Старая таблица удалена")
         
-        # Создаем новую таблицу
-        create_sql = f"""
-        CREATE TABLE {table_name} (
-            id TEXT,
-            mode TEXT,
-            "time/s" TEXT,
-            "control/V" TEXT,
-            "Ewe/V" TEXT,
-            "<I>/mA" TEXT
-        )
-        """
+        # Создаем нормализованные названия колонок
+        normalized_columns = [normalize_column_name(col) for col in df_100.columns]
+        
+        # Выводим таблицу соответствия ДО создания таблицы
+        print("\n📋 СООТВЕТСТВИЕ КОЛОНОК (оригинал -> нормализованное):")
+        print("=" * 80)
+        for i, original_col in enumerate(df_100.columns):
+            print(f"  {original_col:40} -> {normalized_columns[i]}")
+        print("=" * 80)
+        
+        # Создаем таблицу на основе структуры данных
+        columns_sql = []
+        for i, col in enumerate(df_100.columns):
+            dtype = str(df_100[col].dtype)
+            normalized_col = normalized_columns[i]
+            
+            if 'category' in dtype or 'object' in dtype:
+                sql_type = 'TEXT'
+            elif 'int' in dtype:
+                sql_type = 'INTEGER'
+            elif 'float' in dtype:
+                sql_type = 'REAL'
+            else:
+                sql_type = 'TEXT'
+                
+            columns_sql.append(f'"{normalized_col}" {sql_type}')
+        
+        create_sql = f'CREATE TABLE {table_name} ({", ".join(columns_sql)})'
         cursor.execute(create_sql)
         print("Новая таблица создана")
         
         # Записываем данные
         print(f"Записываем данные в таблицу {table_name}...")
         
+        # Подготавливаем SQL запрос с нормализованными названиями колонок
+        columns_str = ', '.join([f'"{col}"' for col in normalized_columns])
+        placeholders = ', '.join(['%s'] * len(normalized_columns))
+        insert_sql = f"INSERT INTO {table_name} ({columns_str}) VALUES ({placeholders})"
+        
         total_inserted = 0
+        
         for index, row in df_100.iterrows():
             try:
-                insert_sql = f"""
-                INSERT INTO {table_name} (id, mode, "time/s", "control/V", "Ewe/V", "<I>/mA") 
-                VALUES (%s, %s, %s, %s, %s, %s)
-                """
+                # Преобразуем строку в список значений
+                values = []
+                for col in df_100.columns:
+                    value = row[col]
+                    # Обрабатываем NaN значения
+                    if pd.isna(value):
+                        values.append(None)
+                    else:
+                        # Преобразуем в базовые типы Python
+                        if isinstance(value, (pd.Timestamp, pd.Timedelta)):
+                            values.append(str(value))
+                        else:
+                            values.append(value)
                 
-                # Берем значения как строки
-                id_val = str(row['id']) if 'id' in row and pd.notna(row['id']) else ''
-                mode_val = str(row['mode']) if 'mode' in row and pd.notna(row['mode']) else ''
-                time_val = str(row['time/s']) if 'time/s' in row and pd.notna(row['time/s']) else ''
-                control_val = str(row['control/V']) if 'control/V' in row and pd.notna(row['control/V']) else ''
-                ewe_val = str(row['Ewe/V']) if 'Ewe/V' in row and pd.notna(row['Ewe/V']) else ''
-                current_val = str(row['<I>/mA']) if '<I>/mA' in row and pd.notna(row['<I>/mA']) else ''
-                
-                cursor.execute(insert_sql, (id_val, mode_val, time_val, control_val, ewe_val, current_val))
+                # Вставляем одну строку
+                cursor.execute(insert_sql, values)
                 total_inserted += 1
                 
                 if total_inserted % 20 == 0:
@@ -122,20 +170,51 @@ def main():
         count = cursor.fetchone()[0]
         print(f"Проверка: в таблице {count} строк")
         
-        # Показываем пример данных
-        cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
+        # Выводим структуру таблицы из PostgreSQL
+        print(f"\n🏗️  СТРУКТУРА ТАБЛИЦЫ В POSTGRESQL:")
+        print("=" * 80)
+        cursor.execute(f"""
+            SELECT column_name, data_type, is_nullable 
+            FROM information_schema.columns 
+            WHERE table_name = '{table_name}'
+            ORDER BY ordinal_position
+        """)
+        
+        columns_info = cursor.fetchall()
+        print(f"{'Колонка в БД':30} {'Тип':15} {'NULLable':10}")
+        print("-" * 80)
+        for col_info in columns_info:
+            print(f"{col_info[0]:30} {col_info[1]:15} {col_info[2]:10}")
+        print("=" * 80)
+        
+        # Выводим пример данных из таблицы
+        print(f"\n📊 ПРИМЕР ДАННЫХ ИЗ ТАБЛИЦЫ (первые 3 строки):")
+        print("=" * 80)
+        cursor.execute(f"SELECT * FROM {table_name} LIMIT 3")
         sample_data = cursor.fetchall()
-        print("Пример записанных данных:")
-        for i, row in enumerate(sample_data):
-            print(f"   {i+1}: {row}")
+        
+        # Получаем названия колонок для заголовка
+        cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
+        col_names = [desc[0] for desc in cursor.description]
+        
+        # Выводим заголовок с названиями колонок
+        header = " | ".join([f"{name:15}" for name in col_names])
+        print(header)
+        print("-" * len(header))
+        
+        # Выводим данные
+        for row in sample_data:
+            row_str = " | ".join([f"{str(val):15}" for val in row])
+            print(row_str)
+        print("=" * 80)
         
         cursor.close()
         conn.close()
         
-        print("Задание выполнено!")
+        print("\n✅ Задание выполнено!")
         
     except Exception as e:
-        print(f"Ошибка: {e}")
+        print(f"❌ Ошибка: {e}")
         import traceback
         print(traceback.format_exc())
 
