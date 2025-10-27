@@ -16,35 +16,35 @@ out_parquet = "инжиниринг.parquet"
 # Эталонный SHA256-хэш
 EXPECTED_HASH = "d380426c075b294b3a5808b987a352c53e8b3ff3ae99e6bec50423a710166c1f"
 
-# Словарь типов колонок
+# Словарь типов колонок - ИСПРАВЛЕННЫЙ
 TYPE_MAP = {
     "id": "category",
     "mode": "Int64",
-    "0": "Int64",
+    "ox/red": "category",
     "error": "Int64",
     "control changes": "Int64",
     "Ns changes": "Int64",
     "counter inc.": "Int64",
     "Ns": "Int64",
-    "time/s": "float",
-    "control/V": "float",
-    "Ewe/V": "float",
-    "<I>/mA": "float",
-    "dQ/C": "float",
-    "(Q-Qo)/C": "float",
+    "time/s": "float64",
+    "control/V": "float64",
+    "Ewe/V": "float64",
+    "<I>/mA": "float64",
+    "dQ/C": "float64",
+    "(Q-Qo)/C": "float64",
     "I Range": "Int64",
-    "Q charge/discharge/mA.h": "float",
+    "Q charge/discharge/mA.h": "float64",
     "half cycle": "Int64",
-    "Energy charge/W.h": "float",
-    "Energy discharge/W.h": "float",
-    "Capacitance charge/µF": "float",
-    "Capacitance discharge/µF": "float",
-    "Q discharge/mA.h": "float",
-    "Q charge/mA.h": "float",
-    "Capacity/mA.h": "float",
-    "Efficiency/%": "float",
-    "cycle number": "float",
-    "P/W": "float"
+    "Energy charge/W.h": "float64",
+    "Energy discharge/W.h": "float64",
+    "Capacitance charge/µF": "float64",
+    "Capacitance discharge/µF": "float64",
+    "Q discharge/mA.h": "float64",
+    "Q charge/mA.h": "float64",
+    "Capacity/mA.h": "float64",
+    "Efficiency/%": "float64",
+    "cycle number": "float64",
+    "P/W": "float64"
 }
 
 # === Вспомогательные функции ===
@@ -115,10 +115,6 @@ def load_and_cast():
 
     print("🧮 Нормализуем числовые данные (запятые → точки, e-формат)...")
 
-    # Определяем числовые колонки из TYPE_MAP
-    numeric_cols = [col for col, dtype in TYPE_MAP.items() if "Int" in dtype or "float" in dtype]
-    numeric_cols = [col for col in numeric_cols if col in df.columns]  # оставляем только существующие
-
     # Функция очистки числовых ячеек
     def normalize_cell(x):
         if isinstance(x, str):
@@ -131,14 +127,34 @@ def load_and_cast():
             return x  # оставляем строки нетронутыми
         return x
 
-    for col in numeric_cols:
-        df[col] = df[col].map(normalize_cell)
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    # Приведение остальных типов по TYPE_MAP
+    # Приведение типов по TYPE_MAP - БЕЗОПАСНЫЙ СПОСОБ
     for col, dtype in TYPE_MAP.items():
-        if col in df.columns and dtype == "category":
-            df[col] = df[col].astype(dtype)
+        if col in df.columns:
+            print(f"Обрабатываем колонку: {col} -> {dtype}")
+            
+            if dtype == "category":
+                df[col] = df[col].astype("category")
+                
+            elif dtype == "Int64":
+                # Сначала нормализуем, затем пытаемся преобразовать в целые
+                df[col] = df[col].map(normalize_cell)
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+                
+                # Проверяем, можно ли безопасно преобразовать в целые
+                temp_series = df[col].dropna()
+                if len(temp_series) > 0:
+                    # Проверяем, все ли значения целые
+                    if (temp_series == temp_series.astype(int)).all():
+                        df[col] = df[col].astype("Int64")
+                    else:
+                        print(f"  ⚠️ Колонка {col} содержит дробные значения, оставляем как float")
+                        df[col] = df[col].astype("float64")
+                else:
+                    df[col] = df[col].astype("Int64")
+                    
+            elif dtype == "float64":
+                df[col] = df[col].map(normalize_cell)
+                df[col] = pd.to_numeric(df[col], errors="coerce").astype("float64")
 
     # Печать первых строк для проверки
     print("\nПервые 10 ID:")
@@ -147,11 +163,8 @@ def load_and_cast():
     else:
         print("⚠️ Колонка 'id' не найдена!")
 
-    print("\nПервые 10 строк числовых данных:")
-    if numeric_cols:
-        print(df[numeric_cols].head(10))
-    else:
-        print("⚠️ Числовые колонки не найдены!")
+    print("\nТипы колонок после обработки:")
+    print(df.dtypes)
 
     return df
 
@@ -169,14 +182,14 @@ def main():
     download_if_needed()
     df = load_and_cast()
 
-    print("\nПервые 10 строк:")
-    print(df.head(10))
+    print("\nПервые 5 строк:")
+    print(df.head(5))
 
-    print("\nСтроки 62–72:")
-    print(df.iloc[61:72])
+    print("\nНазвания колонок:")
+    print(list(df.columns))
 
-    print("\nТипы колонок:")
-    print(df.dtypes)
+    print("\nИнформация о данных:")
+    print(df.info())
 
     save_parquet(df)
 
