@@ -187,25 +187,20 @@ def main():
             print(f"{col_info[0]:30} {col_info[1]:15} {col_info[2]:10}")
         print("=" * 80)
         
-        # Выводим пример данных из таблицы
-        print(f"\n📊 ПРИМЕР ДАННЫХ ИЗ ТАБЛИЦЫ (первые 3 строки):")
+        # ВЫВОДИМ ПРАВИЛЬНО ФОРМАТИРОВАННЫЕ ДАННЫЕ
+        print(f"\n📊 ПРИМЕР ДАННЫХ ИЗ ТАБЛИЦЫ:")
         print("=" * 80)
         cursor.execute(f"SELECT * FROM {table_name} LIMIT 3")
         sample_data = cursor.fetchall()
-        
-        # Получаем названия колонок для заголовка
+
         cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
         col_names = [desc[0] for desc in cursor.description]
-        
-        # Выводим заголовок с названиями колонок
-        header = " | ".join([f"{name:15}" for name in col_names])
-        print(header)
-        print("-" * len(header))
-        
-        # Выводим данные
-        for row in sample_data:
-            row_str = " | ".join([f"{str(val):15}" for val in row])
-            print(row_str)
+
+        # Просто выводим каждую строку как есть
+        for i, row in enumerate(sample_data):
+            print(f"\nСтрока {i+1}:")
+            for col_name, value in zip(col_names, row):
+                print(f"  {col_name}: {value}")
         print("=" * 80)
         
         cursor.close()
