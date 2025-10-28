@@ -15,14 +15,13 @@ python data_loader.py
 ## Результат
 <img width="620" height="69" alt="image" src="https://github.com/user-attachments/assets/9dc4b465-6650-42d7-88a4-98fbdde628b9" />
 
-## Структура данных
 EC-lab-files/
 ├── notebooks/
-│   └── EDA.ipynb              📓 # Основной ноутбук с анализом
-├── data_loader.py             🐍 # Скрипт загрузки и обработки данных
-├── requirements.txt           📋 # Зависимости проекта
-├── preview_csv.py             🐍 # Скрипт первичного отображения файла для понимания что там происходит
-└── write_to_db.py             📋 # Подключение к сторонней базе данных и их выгрузка
+│   └── EDA.ipynb              # Основной ноутбук с анализом
+├── data_loader.py             # Скрипт загрузки и обработки данных
+├── requirements.txt           # Зависимости проекта
+├── preview_csv.py             # Скрипт первичного отображения файла
+└── write_to_db.py             # Подключение к сторонней базе данных
 
 # Типизация и перевод в паркет
 
