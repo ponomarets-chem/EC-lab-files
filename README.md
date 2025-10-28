@@ -8,7 +8,7 @@ Collection of EC-lab files exported to txt format 📈
 Data set -https://drive.google.com/drive/u/1/folders/1CcFVavXoBoMwNZRdlXCKA-LY8l8kU_kR?ths=true 
 ## 🚀 Как запустить
 
-1. **Установить зависимости:**
+1. Установить зависимости:
 ```bash
 pip install -r requirements.txt
 2. **Запустить:** 
