@@ -15,6 +15,8 @@ python data_loader.py
 ## Результат
 <img width="620" height="69" alt="image" src="https://github.com/user-attachments/assets/9dc4b465-6650-42d7-88a4-98fbdde628b9" />
 
+
+# Структура
 EC-lab-files/
 ├── notebooks/
 │   └── EDA.ipynb              # Основной ноутбук с анализом
