@@ -65,32 +65,23 @@ P/W                              float64
 dtype: object
 
 
-# EC-lab-files
+## 🔬 Data Analysis & Exploration
 
-Анализ электрохимических данных из файлов EC-lab
+### 📊 Exploratory Data Analysis (EDA)
 
-## 📊 EDA Ноутбук с интерактивной визуализацией
+The comprehensive EDA includes:
+- Data quality assessment (completeness, consistency)
+- Statistical analysis and distributions  
+- Outlier detection and treatment
+- Feature engineering insights
 
-[<img src="https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg" width="200" alt="Open in Nbviewer">](https://nbviewer.org/github/ponomarets-chem/EC-lab-files/blob/main/notebooks/EDA.ipynb)
+#### 📖 View the Analysis:
 
-### 🔗 Прямые ссылки для просмотра:
-- 🌸 [Основной EDA ноутбук](https://nbviewer.org/github/ponomarets-chem/EC-lab-files/blob/main/notebooks/EDA.ipynb)
-- 📈 [Альтернативная ссылка nbviewer](https://nbviewer.jupyter.org/github/ponomarets-chem/EC-lab-files/blob/main/notebooks/EDA.ipynb)
+[![Open in NbViewer](https://img.shields.io/badge/📖_Open_in_NbViewer-1.0.0-blue?style=for-the-badge)](https://nbviewer.org/github/ponomarets-chem/EC-lab-files/blob/main/notebooks/EDA.ipynb)
 
-## 🎯 Особенности анализа
-
-### 📈 Визуализация
-- **3D интерактивные графики** CV экспериментов
-- **Анимированные вольтамперные характеристики** с прогрессивным рисованием
-- **Интерактивные дашборды** с Plotly Express
-- **Сравнительный анализ** категорий экспериментов (CA, CV, другие)
-- **Единый кастомный стиль** с розовой палитрой
-
-### 🔧 Технологии
-- Python 3.12+
-- Pandas для анализа данных
-- Plotly для интерактивной визуализации
-- Jupyter Notebook
-- Nbviewer для рендера
-
-### 📁 Структура проекта
+#### 🔧 Local Development:
+```bash
+# Clone and run locally
+git clone https://github.com/ponomarets-chem/EC-lab-files.git
+cd EC-lab-files
+jupyter notebook notebooks/EDA.ipynb
