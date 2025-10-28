@@ -65,23 +65,32 @@ P/W                              float64
 dtype: object
 
 
-## 🔬 Data Analysis & Exploration
+# EC-lab-files
 
-### 📊 Exploratory Data Analysis (EDA)
+Проект для анализа данных электрохимических исследований.
 
-The comprehensive EDA includes:
-- Data quality assessment (completeness, consistency)
-- Statistical analysis and distributions  
-- Outlier detection and treatment
-- Feature engineering insights
+## 🔍 Exploratory Data Analysis (EDA)
 
-#### 📖 View the Analysis:
+[![View EDA Analysis](https://img.shields.io/badge/📊_View_EDA_Notebook-NbViewer-blue)](https://nbviewer.org/github/ponomarets-chem/EC-lab-files/blob/main/notebooks/EDA.ipynb)
 
-[![Open in NbViewer](https://img.shields.io/badge/📖_Open_in_NbViewer-1.0.0-blue?style=for-the-badge)](https://nbviewer.org/github/ponomarets-chem/EC-lab-files/blob/main/notebooks/EDA.ipynb)
 
-#### 🔧 Local Development:
+
+## ⚠️ Примечание
+
+3D графики и анимации в ноутбуке видны только в интерактивных средах:
+- Локальный Jupyter Notebook
+- Google Colab
+- VS Code с расширением Jupyter
+
+## 🚀 Быстрый старт
+
 ```bash
-# Clone and run locally
+# Клонировать репозиторий
 git clone https://github.com/ponomarets-chem/EC-lab-files.git
 cd EC-lab-files
+
+# Установить зависимости
+pip install pandas matplotlib plotly jupyter
+
+# Запустить ноутбук
 jupyter notebook notebooks/EDA.ipynb
