@@ -63,3 +63,16 @@ Efficiency/%                     float64
 cycle number                     float64
 P/W                              float64
 dtype: object
+
+
+# Электрохимический анализ данных
+
+## 📊 EDA Ноутбук
+
+[![Open In Nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.org/github/username/repository/blob/main/notebooks/EDA.ipynb)
+
+### Особенности:
+- Интерактивная 3D визуализация CV экспериментов
+- Анимированные вольтамперные характеристики  
+- Сравнительный анализ категорий экспериментов
+- Единый стиль оформления
