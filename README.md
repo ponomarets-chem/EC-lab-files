@@ -17,6 +17,7 @@ python data_loader.py
 
 
 # Структура
+```
 EC-lab-files/
 ├── notebooks/
 │   └── EDA.ipynb              # Основной ноутбук с анализом
@@ -24,6 +25,7 @@ EC-lab-files/
 ├── requirements.txt           # Зависимости проекта
 ├── preview_csv.py             # Скрипт первичного отображения файла
 └── write_to_db.py             # Подключение к сторонней базе данных
+```
 
 # Типизация и перевод в паркет
 
