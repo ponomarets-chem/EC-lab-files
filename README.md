@@ -38,7 +38,7 @@ pip install -r requirements.txt
 ## 🚀 Запуск ETL pipeline
 # Автоматический запуск
 python run_etl.py
-
+```
 
 ## 📊 Описание данных
 
