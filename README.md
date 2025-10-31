@@ -123,7 +123,7 @@ pip install pandas matplotlib plotly jupyter
 
 # Запустить ноутбук
 jupyter notebook notebooks/EDA.ipynb
-```bash
+```
 
 ## 👤 Автор
 pink_chemist - ponomarets - Инжиниринг управления данными
